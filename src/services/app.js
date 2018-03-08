@@ -1,6 +1,7 @@
+import openSocket from 'socket.io-client';
 import { request, config } from 'utils'
 
-const { api } = config
+const { api, SOCKET_URL } = config
 const { user, userLogout, userLogin } = api
 
 export async function login (params) {
@@ -25,4 +26,14 @@ export async function query (params) {
     method: 'get',
     data: params,
   })
+}
+
+export function createSocket() {
+  const client = openSocket(SOCKET_URL);
+  return new Promise((resolve) => {
+    client.on('connect', () => {
+      console.log('connected to socket.io port=3092')
+      resolve(client);
+    });
+  });
 }

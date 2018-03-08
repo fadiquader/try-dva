@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import { Layout, Menu } from 'antd'
 
-const { Header } = Layout;
+// const { Header } = Layout;
 
 const LandingHeader = props => {
   const { location } = props;

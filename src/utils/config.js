@@ -1,4 +1,5 @@
 const API_URL = 'http://localhost:3091'
+const SOCKET_URL = 'http://localhost:3092'
 const APIV1 = API_URL + '/api/v1'
 const APIV2 = API_URL + '/api/v2'
 
@@ -14,6 +15,7 @@ module.exports = {
   apiPrefix: '/api/v1',
   APIV1,
   APIV2,
+  SOCKET_URL,
   api: {
     userLogin: `${APIV1}/user/login`,
     userLogout: `${APIV1}/user/logout`,
