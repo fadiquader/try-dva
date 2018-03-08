@@ -13,7 +13,7 @@ const LandingHeader = props => {
     selectedKeys.push('/login')
   }
   return (
-    <Header>
+    <div>
       <Menu mode="horizontal" selectedKeys={selectedKeys}>
         <Menu.Item key={'/login'}>
           <Link to={'/login'}>
@@ -21,7 +21,7 @@ const LandingHeader = props => {
           </Link>
         </Menu.Item>
       </Menu>
-    </Header>
+    </div>
   )
 };
 

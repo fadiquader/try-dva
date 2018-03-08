@@ -5,7 +5,7 @@ import NProgress from 'nprogress'
 import PropTypes from 'prop-types'
 import pathToRegexp from 'path-to-regexp'
 import { connect } from 'dva'
-import { Loader, MyLayout } from 'components'
+import { Loader, MyLayout, LandingLayout } from 'components'
 import { BackTop, Layout } from 'antd'
 import { classnames, config } from 'utils'
 import { Helmet } from 'react-helmet'
@@ -16,6 +16,7 @@ import './app.less'
 
 const { Content, Footer, Sider } = Layout
 const { Header, Bread, styles } = MyLayout
+const { LandingHeader, LandingFooter } = LandingLayout
 const { prefix, openPages } = config
 
 let lastHref
@@ -83,11 +84,26 @@ const App = ({
     location,
   }
 
+  const landingHeaderProps = {
+    location
+  }
+
   if (openPages && openPages.includes(pathname)) {
-    return (<div>
-      <Loader fullScreen spinning={loading.effects['app/query']} />
-      {children}
-    </div>)
+    return (
+      <div>
+        <Loader fullScreen spinning={loading.effects['app/query']} />
+        <Layout>
+          <LandingHeader {...landingHeaderProps} />
+          <Layout>
+            <Content>
+              {children}
+            </Content>
+          </Layout>
+          <LandingFooter />
+        </Layout>
+        /
+      </div>
+    )
   }
 
   return (
