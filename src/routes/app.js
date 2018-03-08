@@ -10,6 +10,7 @@ import { BackTop, Layout } from 'antd'
 import { classnames, config } from 'utils'
 import { Helmet } from 'react-helmet'
 import { withRouter } from 'dva/router'
+import { injectIntl, FormattedMessage } from 'react-intl';
 import Error from './error'
 import '../themes/index.less'
 import './app.less'
@@ -22,7 +23,7 @@ const { prefix, openPages } = config
 let lastHref
 
 const App = ({
-  children, dispatch, app, loading, location,
+  children, dispatch, app, loading, location, intl
 }) => {
   const {
     user, siderFold, darkTheme, isNavbar, menuPopoverVisible, navOpenKeys, menu, permissions,
@@ -96,6 +97,7 @@ const App = ({
           <LandingHeader {...landingHeaderProps} />
           <Layout>
             <Content>
+              <FormattedMessage id="projectName" values={{ name: 'DVA'}} />
               {children}
             </Content>
           </Layout>
@@ -109,7 +111,7 @@ const App = ({
   return (
     <div>
       <Loader fullScreen spinning={loading.effects['app/query']} />
-      <Helmet>
+      <Helmet  htmlAttributes={{ lang : locale }}>
         <title>ANTD ADMIN</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href={logo} type="image/x-icon" />
@@ -149,4 +151,4 @@ App.propTypes = {
   loading: PropTypes.object,
 }
 
-export default withRouter(connect(({ app, loading }) => ({ app, loading }))(App))
+export default injectIntl(withRouter(connect(({ app, loading }) => ({ app, loading }))(App)))
