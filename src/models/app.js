@@ -7,9 +7,10 @@ import { routerRedux } from 'dva/router'
 import { parse } from 'qs'
 import config from 'config'
 import { EnumRoleType } from 'enums'
-import { query, logout } from 'services/app'
+import { query, logout, createSocket } from 'services/app'
 import * as menusService from 'services/menus'
 import queryString from 'query-string'
+import { subscribe } from '../services/channels'
 
 const { prefix } = config
 
@@ -86,6 +87,14 @@ export default {
             return cases.every(_ => _)
           })
         }
+        const socket = yield call(createSocket);
+        yield put({
+          type: 'handleIO',
+          payload: {
+            user,
+            socket
+          }
+        })
         yield put({
           type: 'updateState',
           payload: {
@@ -94,7 +103,8 @@ export default {
             menu,
           },
         })
-        if (location.pathname === '/login') {
+
+        if (location.pathname === '/' || location.pathname === '/login') {
           yield put(routerRedux.push({
             pathname: '/dashboard',
           }))
@@ -128,6 +138,26 @@ export default {
       }
     },
 
+    * handleIO({ type, payload}, { call, put, fork, take }) {
+      console.log('payload: ', payload.user, payload.socket)
+      // function* read() {
+      //   // const channel = yield call(subscribe, socket, payload.user.id);
+      //   try {
+      //     while (true) {
+      //       const action = yield take(channel)
+      //       yield put(action)
+      //     }
+      //   } catch (err) { }
+      // }
+      // function* write() {
+      //   try {
+      //     while (true) {
+      //       // const { payload } = yield take(`${actions.sendMessage}`);
+      //       socket.emit('message', '');
+      //     }
+      //   } catch (err) {}
+      // }
+    }
   },
   reducers: {
     updateState (state, { payload }) {

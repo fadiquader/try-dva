@@ -17,17 +17,6 @@ const { prefix, SOCKET_URL } = config
 
 let socket = null;
 
-function connect() {
-  const client = openSocket(SOCKET_URL);
-  return new Promise((resolve) => {
-    socket.on('connect', () => {
-      // console.log('connected to socket.io port=3092')
-      resolve(client);
-    });
-  });
-}
-
-
 // function* handleIO(socket, id) {
 //   yield fork(read, socket, id);
 //   yield fork(write, socket);
@@ -134,37 +123,16 @@ export default {
         }))
       }
     },
-    // * write({ payload }, { take, cancelled }) {
-    //   try {
-    //     while (true) {
-    //       // const { payload } = yield take(`${actions.sendMessage}`);
-    //       socket.emit('message', '');
-    //     }
-    //   } catch (err) {
-    //
-    //   } finally {
-    //     if (yield cancelled()) {
-    //       console.log("Event poll loop cancelled: Read");
-    //     }
-    //     console.log("Event poll loop ended: Read");
-    //   }
-    // },
-    // * read({ payload: { id } }, { call, take, put, cancelled }) {
-    //   const channel = yield call(subscribe, socket, id);
-    //   try {
-    //     while (true) {
-    //       const action = yield take(channel);
-    //       yield put(action);
-    //     }
-    //   } catch (err) {
-    //
-    //   } finally {
-    //     if (yield cancelled()) {
-    //       console.log("Event poll loop cancelled: Write");
-    //     }
-    //     console.log("Event poll loop ended: Write");
-    //   }
-    // },
+    * write({ payload }, { take, cancelled }) {
+      try {
+        while (true) {
+          // const { payload } = yield take(`${actions.sendMessage}`);
+          socket.emit('message', '');
+        }
+      } catch (err) {
+
+      }
+    },
     * logout ({
                 payload,
               }, { call, put }) {
