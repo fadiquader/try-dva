@@ -1,6 +1,7 @@
 /* global window */
 /* global document */
 /* global location */
+/* global localStorage */
 /* eslint no-restricted-globals: ["error", "event"] */
 
 import { routerRedux } from 'dva/router'
@@ -43,9 +44,9 @@ export default {
     locationPathname: '',
     locationQuery: {},
     time: Date.now(),
+    serverStatus: 'unknown',
   },
   subscriptions: {
-
     setupHistory ({ dispatch, history }) {
       history.listen((location) => {
         dispatch({
@@ -66,10 +67,6 @@ export default {
           dispatch({ type: 'changeNavbar' })
         }, 300)
       }
-    },
-    async setupSocket ({ dispatch }) {
-
-      // dispatch({ type: 'app/handleIO', payload:{ socket } })
     },
   },
   effects: {
@@ -98,20 +95,17 @@ export default {
         }
 
         yield put({
-          type: 'handleIO',
-          payload: {
-            user,
-          }
-        })
-        yield put({
           type: 'updateState',
           payload: {
             user,
             permissions,
             menu,
           },
+        });
+        yield put({
+          type: 'handleIO',
+          payload: { user }
         })
-
         if (location.pathname === '/' || location.pathname === '/login') {
           yield put(routerRedux.push({
             pathname: '/dashboard',
@@ -130,12 +124,14 @@ export default {
     * logout ({
       payload,
     }, { call, put }) {
-      const data = yield call(logout, parse(payload))
-      if (data.success) {
-        yield put({ type: 'query' })
-      } else {
-        throw (data)
-      }
+      localStorage.removeItem('token')
+      yield put({ type: 'query' })
+      // const data = yield call(logout, parse(payload))
+      // if (data.success) {
+      //   yield put({ type: 'query' })
+      // } else {
+      //   throw (data)
+      // }
     },
 
     * changeNavbar (action, { put, select }) {
@@ -146,19 +142,26 @@ export default {
       }
     },
 
-    * handleIO({ type, payload}, { call, put, fork, take, cancel, cancelled, race }) {
+    * handleIO({ type, payload}, {
+      call, put, fork, take, cancel, cancelled, race
+    }) {
+
        function* listenDisconnectSaga () {
         while (true) {
           yield call(disconnectSocket);
-          yield put({type: 'connect'});
+          yield put({type: 'serverStatue', payload: 'off' });
         }
       }
-       function* listenConnectSaga (opt) {
+
+      function* listenConnectSaga (opt) {
         while (true) {
           yield call(reconnectSocket, opt);
-          yield put({type: 'reconnect'});
+          yield put({
+            type: 'serverStatus', payload: 'reconnect'
+          })
         }
       }
+
       function* read(socket) {
         const channel = yield call(subscribe, socket );
         try {
@@ -170,6 +173,7 @@ export default {
 
         }
       }
+
       function* write(soc) {
         try {
           while (true) {
@@ -184,8 +188,8 @@ export default {
       function* handleProcess (soc, opt) {
         yield fork(read, soc)
         yield fork(write, soc)
-        yield fork(listenDisconnectSaga)
-        yield fork(listenConnectSaga, opt)
+        // yield fork(listenDisconnectSaga)
+        // yield fork(listenConnectSaga, opt)
       }
 
       let socket = null;
@@ -193,8 +197,8 @@ export default {
         const defaultOptions = {
           reconnection: true,
           reconnectionAttempts: Infinity,
-          reconnectionDelay: 1 * 1000,
-          reconnectionDelayMax: 10 * 1000,
+          reconnectionDelay: 2 * 1000,
+          reconnectionDelayMax: 20 * 1000,
           autoConnect: true,
           transports: ['websocket'],
           rejectUnauthorized: true,
@@ -208,19 +212,22 @@ export default {
           type: '@@DVA_LOADING/HIDE',
           payload: { namespace: 'app', actionType: 'app/handleIO' }
         })
+
         const {connected, timeout} = yield race({
           connected: call(connectSocket, defaultOptions),
           timeout: delay(2000),
-        });
+        })
+
         if (timeout) {
-          yield put({type: 'serverOff'})
+          yield put({ type: 'serverStatus', payload: 'off' })
         }
         // socket = yield call(connectSocket, defaultOptions)
         socket = connected
         const task = yield fork(handleProcess, socket, defaultOptions)
-        // yield put({type: 'serverOn'});
+        yield put({ type: 'serverStatus', payload: 'on' })
         yield take(`logout`)
         yield cancel(task)
+        yield put({ type: 'serverStatus', payload: 'unknown' })
       } catch (err) {
       } finally {
         if (yield cancelled() && socket !== null) {
@@ -278,6 +285,12 @@ export default {
       return {
         ...state,
         time: payload.time,
+      }
+    },
+    serverStatus (state, { payload }) {
+      return {
+        ...state,
+        serverStatus: payload,
       }
     }
   },

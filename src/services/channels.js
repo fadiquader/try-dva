@@ -5,6 +5,7 @@ import { eventChannel } from 'redux-saga';
 
 export function subscribe(socket, id) {
   return eventChannel((emit) => {
+    if (!socket) return () => null
     const updateTimeHandler = ({ time }) => {
       emit({
         type: 'updateTime',
@@ -13,12 +14,30 @@ export function subscribe(socket, id) {
         },
       })
     }
+
     socket.on('updateTime', updateTimeHandler)
-    socket.on('disconnect', (e) => {
-      // TODO: handle
-    })
+    const connectHandler = () => {
+      emit({ type: 'serverStatus', payload: 'on' })
+    }
+
+    socket.on('connect', connectHandler)
+
+    const dissConnectHandler = (e) => {
+      console.log('disconnect: ', e)
+      emit({ type: 'serverStatus', payload: 'off' })
+    }
+    socket.on('disconnect', dissConnectHandler);
+
+    const reconnectHandler = (e) => {
+      console.log('reconnect_attempt: ', e)
+      emit({ type: 'serverStatus', payload: 'reconnect' })
+    }
+    socket.on('reconnect_attempt', reconnectHandler)
     return () => {
       socket.off('updateTime', updateTimeHandler)
+      socket.off('connect', connectHandler)
+      socket.off('disconnect', dissConnectHandler)
+      socket.off('reconnect_attempt', reconnectHandler)
     }
   })
 }

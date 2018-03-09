@@ -1,5 +1,7 @@
 /* global window */
 /* global document */
+/* global localStorage */
+
 import React from 'react'
 import NProgress from 'nprogress'
 import PropTypes from 'prop-types'
@@ -102,7 +104,18 @@ const App = ({
           <LandingHeader {...landingHeaderProps} />
           <Layout>
             <Content>
+              <div>{app.time}</div>
               <FormattedMessage id="projectName" values={{ name: 'DVA'}} />
+              <div>
+                <button onClick={() => {
+                  localStorage.setItem('locale', 'ar')
+                  window.location.reload()
+                }}>AR</button>
+              <button onClick={() => {
+                  localStorage.setItem('locale', 'en')
+                window.location.reload()
+                }}>EN</button>
+              </div>
               {children}
             </Content>
           </Layout>
@@ -136,6 +149,7 @@ const App = ({
           <BackTop target={() => document.getElementById('mainContainer')} />
           <Header {...headerProps} />
           <div>{app.time}</div>
+          <div>{app.serverStatus}</div>
           <Content>
             <Bread {...breadProps} />
             {hasPermission ? children : <Error />}

@@ -1,3 +1,5 @@
+/* global window */
+/* global localStorage */
 
 import React from 'react'
 import PropTypes from 'prop-types'
@@ -6,22 +8,21 @@ import dynamic from 'dva/dynamic'
 import App from 'routes/app'
 import { LocaleProvider } from 'antd'
 import { IntlProvider, addLocaleData } from 'react-intl'
-import moment from 'moment';
-import en from 'react-intl/locale-data/en';
-import ar from 'react-intl/locale-data/ar';
+import moment from 'moment'
+import en from 'react-intl/locale-data/en'
+import ar from 'react-intl/locale-data/ar'
 
 const { ConnectedRouter } = routerRedux
-// import enUS from 'antd/lib/locale-provider/en_US'
-// import arEG from 'antd/lib/locale-provider/ar_EG'
 
 addLocaleData([...en, ...ar])
-const locale = localStorage.getItem('locale') || 'en';
+const locale = localStorage.getItem('locale') || 'en'
 window.locale = locale
 const messages = require('./translations/'+locale+'.json')
 const antLocale = {
   'ar': require('antd/lib/locale-provider/ar_EG'),
   'en': require('antd/lib/locale-provider/en_US'),
-};
+}
+
 if(locale !== 'en') {
   require('moment/locale/'+locale+'.js')
 }

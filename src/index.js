@@ -12,8 +12,7 @@ const app = dva({
   },
 })
 app.use(createLoading({
-  // effects: true,
-  except: ['app/handleIO'],
+  effects: true,
 }))
 
 // 2. Model

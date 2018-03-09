@@ -52,6 +52,18 @@ export function disconnectSocket (options={}) {
 
 export function reconnectSocket (options={}) {
   options.transports = ['polling', 'websocket']
+  // options.transportOptions = {
+  //   polling: {
+  //     extraHeaders: {
+  //       token: localStorage.getItem('token') || null
+  //     },
+  //   },
+  //   'websocket': {
+  //     extraHeaders: {
+  //       token: localStorage.getItem('token') || null
+  //     },
+  //   }
+  // }
   socket = openSocket(SOCKET_URL, options)
   return new Promise((resolve) => {
     socket.on('reconnect_attempt', () => {
