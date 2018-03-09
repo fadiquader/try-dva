@@ -5,21 +5,20 @@ import { eventChannel } from 'redux-saga';
 
 export function subscribe(socket, id) {
   return eventChannel((emit) => {
-    socket.on('users.login', ({ username }) => {
-      // emit(actions.addUser({ username }));
-    });
-    socket.on('updateTime', ({ time }) => {
-      // console.log('time ', time)
+    const updateTimeHandler = ({ time }) => {
       emit({
         type: 'updateTime',
         payload: {
           time,
         },
-      });
-    });
+      })
+    }
+    socket.on('updateTime', updateTimeHandler)
     socket.on('disconnect', (e) => {
       // TODO: handle
-    });
-    return () => {};
-  });
+    })
+    return () => {
+      socket.off('updateTime', updateTimeHandler)
+    }
+  })
 }

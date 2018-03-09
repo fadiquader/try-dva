@@ -4,6 +4,8 @@ import { request, config } from 'utils'
 const { api, SOCKET_URL } = config
 const { user, userLogout, userLogin } = api
 
+var socket;
+
 export async function login (params) {
   return request({
     url: userLogin,
@@ -28,15 +30,33 @@ export async function query (params) {
   })
 }
 
-export function createSocket (options={}) {
-  const socket = openSocket(SOCKET_URL, options)
+export function connectSocket (options={}) {
+  socket = openSocket(SOCKET_URL, options)
   return new Promise((resolve) => {
     socket.on('connect', () => {
       console.log('connected to socket.io '+SOCKET_URL)
       resolve(socket)
     })
-    socket.on('error', () => {
-      resolve(null)
+  })
+}
+
+export function disconnectSocket (options={}) {
+  socket = openSocket(SOCKET_URL, options)
+  return new Promise((resolve) => {
+    socket.on('disconnect', () => {
+      console.log('disconnect from socket.io ')
+      resolve(socket)
+    })
+  })
+}
+
+export function reconnectSocket (options={}) {
+  options.transports = ['polling', 'websocket']
+  socket = openSocket(SOCKET_URL, options)
+  return new Promise((resolve) => {
+    socket.on('reconnect_attempt', () => {
+      console.log('reconnect to socket.io '+SOCKET_URL)
+      resolve(socket)
     })
   })
 }
