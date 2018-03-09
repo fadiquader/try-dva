@@ -36,7 +36,12 @@ const App = ({
   const { href } = window.location
 
   if (lastHref !== href) {
+    console.log('loading: ', loading)
     NProgress.start()
+    // if(loading.effects['app/handleIO']) {
+    //   NProgress.done()
+    //   lastHref = href
+    // }
     if (!loading.global) {
       NProgress.done()
       lastHref = href
@@ -130,6 +135,7 @@ const App = ({
         <Layout style={{ height: '100vh', overflow: 'scroll' }} id="mainContainer">
           <BackTop target={() => document.getElementById('mainContainer')} />
           <Header {...headerProps} />
+          <div>{app.time}</div>
           <Content>
             <Bread {...breadProps} />
             {hasPermission ? children : <Error />}

@@ -6,7 +6,9 @@ module.exports = (webpackConfig, env) => {
   const production = env === 'production'
   // FilenameHash
   webpackConfig.output.chunkFilename = '[name].[chunkhash].js'
-
+  if(!production) {
+    webpackConfig.output.crossOriginLoading = 'anonymous'
+  }
   if (production) {
     if (webpackConfig.module) {
     // ClassnameHash
@@ -55,5 +57,6 @@ module.exports = (webpackConfig, env) => {
     themes: `${__dirname}/src/themes`,
   }
 
+  // console.log('webpackConfig: ', webpackConfig)
   return webpackConfig
 }

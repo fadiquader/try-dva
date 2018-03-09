@@ -1,7 +1,8 @@
 const API_URL = 'http://localhost:3091'
 const SOCKET_URL = 'http://localhost:3092'
-const APIV1 = API_URL + '/api/v1'
-const APIV2 = API_URL + '/api/v2'
+const APIV1 = API_URL+'/api/v1'
+// const APIV1 = '/api/v1'
+const APIV2 = '/api/v2'
 
 module.exports = {
   name: 'AntD Admin',
@@ -10,7 +11,7 @@ module.exports = {
   logo: '/logo.svg',
   iconFontCSS: '/iconfont.css',
   iconFontJS: '/iconfont.js',
-  CORS: [],
+  CORS: [API_URL, SOCKET_URL],
   openPages: ['/', '/login'],
   apiPrefix: '/api/v1',
   APIV1,

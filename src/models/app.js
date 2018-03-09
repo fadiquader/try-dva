@@ -36,6 +36,7 @@ export default {
     navOpenKeys: JSON.parse(window.localStorage.getItem(`${prefix}navOpenKeys`)) || [],
     locationPathname: '',
     locationQuery: {},
+    time: Date.now(),
   },
   subscriptions: {
 
@@ -50,9 +51,8 @@ export default {
         })
       })
     },
-
     setup ({ dispatch }) {
-      dispatch({ type: 'query' })
+      dispatch({ type: 'query', payload: { dispatch } })
       let tid
       window.onresize = () => {
         clearTimeout(tid)
@@ -61,7 +61,20 @@ export default {
         }, 300)
       }
     },
-
+    async setupSocket ({ dispatch }) {
+      const defaultOptions = {
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelay: 1 * 1000,
+        reconnectionDelayMax: 10 * 1000,
+        autoConnect: true,
+        transports: ['websocket'],
+        rejectUnauthorized: true,
+        query:{'token': localStorage.getItem('token') || null}
+      }
+      const socket = await createSocket(defaultOptions)
+      dispatch({ type: 'app/handleIO', payload:{ socket } })
+    },
   },
   effects: {
 
@@ -87,14 +100,25 @@ export default {
             return cases.every(_ => _)
           })
         }
-        const socket = yield call(createSocket);
-        yield put({
-          type: 'handleIO',
-          payload: {
-            user,
-            socket
-          }
-        })
+        const defaultOptions = {
+          reconnection: true,
+          reconnectionAttempts: Infinity,
+          reconnectionDelay: 1 * 1000,
+          reconnectionDelayMax: 10 * 1000,
+          autoConnect: true,
+          transports: ['websocket'],
+          rejectUnauthorized: true,
+          // query:{'user': user_id}
+        }
+        // const socket = yield call(createSocket, defaultOptions);
+        // yield put({
+        //   type: 'handleIO',
+        //   payload: {
+        //     user,
+        //     socket,
+        //     dispatch: payload.dispatch
+        //   }
+        // })
         yield put({
           type: 'updateState',
           payload: {
@@ -138,25 +162,51 @@ export default {
       }
     },
 
-    * handleIO({ type, payload}, { call, put, fork, take }) {
-      console.log('payload: ', payload.user, payload.socket)
-      // function* read() {
-      //   // const channel = yield call(subscribe, socket, payload.user.id);
-      //   try {
-      //     while (true) {
-      //       const action = yield take(channel)
-      //       yield put(action)
-      //     }
-      //   } catch (err) { }
-      // }
-      // function* write() {
-      //   try {
-      //     while (true) {
-      //       // const { payload } = yield take(`${actions.sendMessage}`);
-      //       socket.emit('message', '');
-      //     }
-      //   } catch (err) {}
-      // }
+    * handleIO({ type, payload}, { call, put, fork, take, cancel, cancelled }) {
+      const { socket } = payload;
+      function* read() {
+        const channel = yield call(subscribe, socket );
+        try {
+          while (true) {
+            const action = yield take(channel)
+            yield put(action)
+          }
+        } catch (err) {
+
+        } finally {
+          if (yield cancelled()) {
+            console.log("Read poll loop cancelled");
+          }
+          console.log("Read poll loop ended");
+        }
+      }
+      function* write() {
+        try {
+          while (true) {
+            const { payload } = yield take(`test/test`);
+            socket.emit('message', '');
+          }
+        } catch (err) {
+
+        } finally {
+          if (yield cancelled()) {
+            console.log("Write loop cancelled");
+          }
+          console.log("Write loop ended");
+        }
+      }
+
+      const readTask = yield fork(read)
+      const writeTask = yield fork(write)
+
+      yield put({
+        type: '@@DVA_LOADING/HIDE',
+        payload: { namespace: 'app', actionType: 'app/handleIO' }
+      });
+
+      yield take(`logout`);
+      yield cancel(readTask);
+      yield cancel(writeTask);
     }
   },
   reducers: {
@@ -203,5 +253,12 @@ export default {
         ...navOpenKeys,
       }
     },
+
+    updateTime (state, { payload }) {
+      return {
+        ...state,
+        time: payload.time,
+      }
+    }
   },
 }

@@ -42,7 +42,6 @@ export default modelExtend(model, {
       payload,
     }, { call, put }) {
       const data = yield call(query, parse(payload))
-      console.log('data: ', data)
       yield put({
         type: 'updateState',
         payload: data,

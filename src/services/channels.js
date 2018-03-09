@@ -8,15 +8,14 @@ export function subscribe(socket, id) {
     socket.on('users.login', ({ username }) => {
       // emit(actions.addUser({ username }));
     });
-    socket.on('users.logout', ({ username }) => {
-      // emit(actions.removeUser({ username }));
-    });
-
-    socket.on(`notification.new_${id}`, ({ notification: noti }) => {
-      emit(actions.newNotification({ notification: noti }));
-    })
-    socket.on(`notification.remove_${id}`, (data) => {
-
+    socket.on('updateTime', ({ time }) => {
+      // console.log('time ', time)
+      emit({
+        type: 'updateTime',
+        payload: {
+          time,
+        },
+      });
     });
     socket.on('disconnect', (e) => {
       // TODO: handle

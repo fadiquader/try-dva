@@ -28,12 +28,15 @@ export async function query (params) {
   })
 }
 
-export function createSocket () {
-  const client = openSocket(SOCKET_URL)
+export function createSocket (options={}) {
+  const socket = openSocket(SOCKET_URL, options)
   return new Promise((resolve) => {
-    client.on('connect', () => {
-      console.log('connected to socket.io port=3092')
-      resolve(client)
+    socket.on('connect', () => {
+      console.log('connected to socket.io '+SOCKET_URL)
+      resolve(socket)
+    })
+    socket.on('error', () => {
+      resolve(null)
     })
   })
 }

@@ -6,14 +6,15 @@ import 'babel-polyfill'
 
 // 1. Initialize
 const app = dva({
-  ...createLoading({
-    effects: true,
-  }),
   history: createHistory(),
   onError (error) {
     message.error(error.message)
   },
 })
+app.use(createLoading({
+  // effects: true,
+  except: ['app/handleIO'],
+}))
 
 // 2. Model
 app.model(require('./models/app'))
