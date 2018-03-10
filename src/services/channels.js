@@ -5,7 +5,7 @@ import { eventChannel } from 'redux-saga';
 
 export function subscribe(socket, id) {
   return eventChannel((emit) => {
-    if (!socket) return () => null
+    if(!socket) return () => n
     const updateTimeHandler = ({ time }) => {
       emit({
         type: 'updateTime',

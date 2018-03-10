@@ -5,8 +5,8 @@
 /* eslint no-restricted-globals: ["error", "event"] */
 
 import { routerRedux } from 'dva/router'
-import { delay } from 'redux-saga'
 import { parse } from 'qs'
+// import { setContext, getContext } from 'redux-saga/effects'
 import config from 'config'
 import { EnumRoleType } from 'enums'
 import {
@@ -17,7 +17,15 @@ import {
 } from 'services/app'
 import * as menusService from 'services/menus'
 import queryString from 'query-string'
-import { subscribe } from '../services/channels'
+// import { subscribe } from '../services/channels'
+import {
+  onConnect,
+  onDisconnect,
+  onReconnectAttempt,
+  onConnecting,
+  forceDisconnect,
+  forceConnect,
+} from 'services/socket'
 
 const { prefix } = config
 
@@ -68,6 +76,21 @@ export default {
         }, 300)
       }
     },
+    setupSocket ({ dispatch}) {
+      console.log('setupSocket: ')
+      onConnect(() => {
+        dispatch({ type: 'serverStatus', payload: 'on' })
+      })
+      onDisconnect(() => {
+        dispatch({ type: 'serverStatus', payload: 'off' })
+        // forceConnect()
+
+      })
+      onReconnectAttempt(() => {
+        dispatch({ type: 'serverStatus', payload: 'reconnect' })
+      })
+
+    }
   },
   effects: {
 
@@ -76,6 +99,11 @@ export default {
     }, { call, put, select }) {
       const { success, user } = yield call(query, payload)
       console.log('user: ', user)
+      if(user === null) {
+        forceDisconnect()
+      } else {
+        forceConnect()
+      }
       const { locationPathname } = yield select(_ => _.app)
       if (success && user) {
         const { list } = yield call(menusService.query)
@@ -101,11 +129,11 @@ export default {
             permissions,
             menu,
           },
-        });
-        yield put({
-          type: 'handleIO',
-          payload: { user }
         })
+        // yield put({
+        //   type: 'handleIO',
+        //   payload: { user }
+        // })
         if (location.pathname === '/' || location.pathname === '/login') {
           yield put(routerRedux.push({
             pathname: '/dashboard',
@@ -124,7 +152,8 @@ export default {
     * logout ({
       payload,
     }, { call, put }) {
-      localStorage.removeItem('token')
+      localStorage.removeItem('token');
+      forceDisconnect()
       yield put({ type: 'query' })
       // const data = yield call(logout, parse(payload))
       // if (data.success) {
@@ -141,12 +170,56 @@ export default {
         yield put({ type: 'handleNavbar', payload: isNavbar })
       }
     },
-
     * handleIO({ type, payload}, {
-      call, put, fork, take, cancel, cancelled, race
+      call, put, fork, take, cancel,
+      cancelled, race
     }) {
+      // let socket = null;
+      // try {
+      //   const defaultOptions = {
+      //     reconnection: true,
+      //     reconnectionAttempts: Infinity,
+      //     reconnectionDelay: 2 * 1000,
+      //     reconnectionDelayMax: 20 * 1000,
+      //     autoConnect: true,
+      //     transports: ['websocket'],
+      //     rejectUnauthorized: true,
+      //     query: {
+      //       token: localStorage.getItem('token') || null
+      //     }
+      //   }
+      //   // const socket = await connectSocket(defaultOptions)
+      //   // yield put({type: CHANNEL_ON});
+      //   yield put({
+      //     type: '@@DVA_LOADING/HIDE',
+      //     payload: { namespace: 'app', actionType: 'app/handleIO' }
+      //   })
+      //
+      //   const {connected, timeout} = yield race({
+      //     connected: call(connectSocket, defaultOptions),
+      //     timeout: delay(2000),
+      //   })
+      //
+      //   if (timeout) {
+      //     yield put({ type: 'serverStatus', payload: 'off' })
+      //   }
+      //   // socket = yield call(connectSocket, defaultOptions)
+      //   socket = connected
+      //   yield setContext({ socket })
+      //   yield put({ type: 'testSaga', payload: '' })
+      //   // const task = yield fork(handleProcess, socket, defaultOptions)
+      //   // yield put({ type: 'serverStatus', payload: 'on' })
+      //   // yield take(`logout`)
+      //   // yield cancel(task)
+      //   // yield put({ type: 'serverStatus', payload: 'unknown' })
+      // } catch (err) {
+      // } finally {
+      //   if (yield cancelled() && socket !== null) {
+      //     socket.disconnect(true)
+      //   }
+      // }
 
-       function* listenDisconnectSaga () {
+      function* listenDisconnectSaga () {
         while (true) {
           yield call(disconnectSocket);
           yield put({type: 'serverStatue', payload: 'off' });
@@ -192,49 +265,7 @@ export default {
         // yield fork(listenConnectSaga, opt)
       }
 
-      let socket = null;
-      try {
-        const defaultOptions = {
-          reconnection: true,
-          reconnectionAttempts: Infinity,
-          reconnectionDelay: 2 * 1000,
-          reconnectionDelayMax: 20 * 1000,
-          autoConnect: true,
-          transports: ['websocket'],
-          rejectUnauthorized: true,
-          query: {
-            token: localStorage.getItem('token') || null
-          }
-        }
-        // const socket = await connectSocket(defaultOptions)
-        // yield put({type: CHANNEL_ON});
-        yield put({
-          type: '@@DVA_LOADING/HIDE',
-          payload: { namespace: 'app', actionType: 'app/handleIO' }
-        })
-
-        const {connected, timeout} = yield race({
-          connected: call(connectSocket, defaultOptions),
-          timeout: delay(2000),
-        })
-
-        if (timeout) {
-          yield put({ type: 'serverStatus', payload: 'off' })
-        }
-        // socket = yield call(connectSocket, defaultOptions)
-        socket = connected
-        const task = yield fork(handleProcess, socket, defaultOptions)
-        yield put({ type: 'serverStatus', payload: 'on' })
-        yield take(`logout`)
-        yield cancel(task)
-        yield put({ type: 'serverStatus', payload: 'unknown' })
-      } catch (err) {
-      } finally {
-        if (yield cancelled() && socket !== null) {
-          socket.disconnect(true)
-        }
-      }
-    }
+    },
   },
   reducers: {
     updateState (state, { payload }) {
@@ -280,7 +311,6 @@ export default {
         ...navOpenKeys,
       }
     },
-
     updateTime (state, { payload }) {
       return {
         ...state,
