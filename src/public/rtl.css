@@ -1,0 +1,24 @@
+
+html, body {
+  direction: rtl;
+}
+
+.ant-layout.ant-layout-has-sider {
+  /*flex-direction: row-reverse;*/
+}
+.ant-menu-submenu-vertical > .ant-menu-submenu-title .ant-menu-submenu-arrow, .ant-menu-submenu-vertical-left > .ant-menu-submenu-title .ant-menu-submenu-arrow, .ant-menu-submenu-vertical-right > .ant-menu-submenu-title .ant-menu-submenu-arrow, .ant-menu-submenu-inline > .ant-menu-submenu-title .ant-menu-submenu-arrow {
+  right: auto;
+  left: 15px;
+}
+.ant-menu-submenu-title {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+.ant-menu-item .anticon, .ant-menu-submenu-title .anticon {
+  margin-right: 0;
+  margin-left: 10px;
+}
+.ant-back-top {
+  right: auto !important;
+  left: 50px;
+}

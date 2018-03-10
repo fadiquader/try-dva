@@ -12,7 +12,7 @@ import { BackTop, Layout } from 'antd'
 import { classnames, config } from 'utils'
 import { Helmet } from 'react-helmet'
 import { withRouter } from 'dva/router'
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl'
 import Error from './error'
 import '../themes/index.less'
 import './app.less'
@@ -20,7 +20,7 @@ import './app.less'
 const { Content, Footer, Sider } = Layout
 const { Header, Bread, styles } = MyLayout
 const { LandingHeader, LandingFooter } = LandingLayout
-const { prefix, openPages } = config
+const { prefix, openPages, rtlCSS } = config
 
 let lastHref
 
@@ -105,7 +105,6 @@ const App = ({
           <Layout>
             <Content>
               <div>{app.time}</div>
-              <FormattedMessage id="projectName" values={{ name: 'DVA'}} />
               <div>
                 <button onClick={() => {
                   localStorage.setItem('locale', 'ar')
@@ -135,6 +134,7 @@ const App = ({
         <link rel="icon" href={logo} type="image/x-icon" />
         {iconFontJS && <script src={iconFontJS} />}
         {iconFontCSS && <link rel="stylesheet" href={iconFontCSS} />}
+        {rtlCSS && intl.locale === 'ar' && <link rel="stylesheet" href={rtlCSS} />}
       </Helmet>
 
       <Layout className={classnames({ [styles.dark]: darkTheme, [styles.light]: !darkTheme })}>

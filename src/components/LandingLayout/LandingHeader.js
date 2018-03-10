@@ -3,6 +3,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import { Layout, Menu } from 'antd'
+import { FormattedMessage } from 'react-intl'
 
 // const { Header } = Layout;
 
@@ -21,6 +22,7 @@ const LandingHeader = props => {
           </Link>
         </Menu.Item>
       </Menu>
+      <FormattedMessage id="projectName" values={{ name: 'DVA'}} />
     </div>
   )
 };

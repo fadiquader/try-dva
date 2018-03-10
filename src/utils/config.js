@@ -11,6 +11,7 @@ module.exports = {
   logo: '/logo.svg',
   iconFontCSS: '/iconfont.css',
   iconFontJS: '/iconfont.js',
+  rtlCSS: '/rtl.css',
   CORS: [API_URL, SOCKET_URL],
   openPages: ['/', '/login'],
   apiPrefix: '/api/v1',
