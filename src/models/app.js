@@ -11,7 +11,6 @@ import config from 'config'
 import { EnumRoleType } from 'enums'
 import {
   query, logout,
-  connectSocket,
   disconnectSocket,
   reconnectSocket,
 } from 'services/app'
@@ -22,7 +21,7 @@ import {
   onConnect,
   onDisconnect,
   onReconnectAttempt,
-  onConnecting,
+  getSocket,
   forceDisconnect,
   forceConnect,
 } from 'services/socket'
@@ -101,8 +100,6 @@ export default {
       console.log('user: ', user)
       if(user === null) {
         forceDisconnect()
-      } else {
-        forceConnect()
       }
       const { locationPathname } = yield select(_ => _.app)
       if (success && user) {
@@ -130,10 +127,11 @@ export default {
             menu,
           },
         })
-        // yield put({
-        //   type: 'handleIO',
-        //   payload: { user }
-        // })
+        const socket = yield call(getSocket)
+        if(!socket || !socket.connected) {
+          yield forceConnect()
+        }
+        console.log('socket: ', socket)
         if (location.pathname === '/' || location.pathname === '/login') {
           yield put(routerRedux.push({
             pathname: '/dashboard',

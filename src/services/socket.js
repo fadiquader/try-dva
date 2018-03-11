@@ -20,11 +20,11 @@ const defaultOptions = {
 
 var socket = openSocket(SOCKET_URL, defaultOptions)
 
-// export function handleConnction() {
-//   socket = openSocket(SOCKET_URL, defaultOptions)
-//   onConnect()
-//   onReconnectAttempt()
-// }
+export function getSocket() {
+  return new Promise((resolve) => {
+    resolve(socket)
+  })
+}
 
 export function onConnect(cb) {
   const handler = (e) => {
