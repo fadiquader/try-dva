@@ -85,9 +85,6 @@ export default {
     }, { call, put, select }) {
       const { success, user } = yield call(query, payload)
       console.log('user: ', user)
-      if(user === null) {
-        forceDisconnect()
-      }
       const { locationPathname } = yield select(_ => _.app)
       if (success && user) {
         const { list } = yield call(menusService.query)
@@ -114,11 +111,6 @@ export default {
             menu,
           },
         })
-        // const socket = yield call(getSocket)
-        // if(!socket || !socket.connected) {
-        //   yield forceConnect()
-        // }
-        // console.log('socket: ', socket)
         if (location.pathname === '/' || location.pathname === '/login') {
           yield put(routerRedux.push({
             pathname: '/dashboard',
@@ -138,7 +130,6 @@ export default {
       payload,
     }, { call, put }) {
       localStorage.removeItem('token');
-      forceDisconnect()
       yield put({ type: 'query' })
       // const data = yield call(logout, parse(payload))
       // if (data.success) {
