@@ -6,26 +6,13 @@
 
 import { routerRedux } from 'dva/router'
 import { parse } from 'qs'
-// import { setContext, getContext } from 'redux-saga/effects'
 import config from 'config'
 import { EnumRoleType } from 'enums'
 import {
   query, logout,
-  disconnectSocket,
-  reconnectSocket,
 } from 'services/app'
 import * as menusService from 'services/menus'
 import queryString from 'query-string'
-// import { subscribe } from '../services/channels'
-import {
-  onConnect,
-  onDisconnect,
-  onReconnectAttempt,
-  getSocket,
-  forceDisconnect,
-  forceConnect,
-} from 'services/socket'
-
 const { prefix } = config
 
 export default {
@@ -76,18 +63,18 @@ export default {
       }
     },
     setupSocket ({ dispatch}) {
-      console.log('setupSocket: ')
-      onConnect(() => {
-        dispatch({ type: 'serverStatus', payload: 'on' })
-      })
-      onDisconnect(() => {
-        dispatch({ type: 'serverStatus', payload: 'off' })
-        // forceConnect()
-
-      })
-      onReconnectAttempt(() => {
-        dispatch({ type: 'serverStatus', payload: 'reconnect' })
-      })
+      // console.log('setupSocket: ')
+      // onConnect(() => {
+      //   dispatch({ type: 'serverStatus', payload: 'on' })
+      // })
+      // onDisconnect(() => {
+      //   dispatch({ type: 'serverStatus', payload: 'off' })
+      //   // forceConnect()
+      //
+      // })
+      // onReconnectAttempt(() => {
+      //   dispatch({ type: 'serverStatus', payload: 'reconnect' })
+      // })
 
     }
   },
@@ -127,11 +114,11 @@ export default {
             menu,
           },
         })
-        const socket = yield call(getSocket)
-        if(!socket || !socket.connected) {
-          yield forceConnect()
-        }
-        console.log('socket: ', socket)
+        // const socket = yield call(getSocket)
+        // if(!socket || !socket.connected) {
+        //   yield forceConnect()
+        // }
+        // console.log('socket: ', socket)
         if (location.pathname === '/' || location.pathname === '/login') {
           yield put(routerRedux.push({
             pathname: '/dashboard',

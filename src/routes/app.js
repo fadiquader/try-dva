@@ -2,18 +2,17 @@
 /* global document */
 /* global localStorage */
 
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import NProgress from 'nprogress'
 import PropTypes from 'prop-types'
 import pathToRegexp from 'path-to-regexp'
 import { connect } from 'dva'
-import { Loader, MyLayout, LandingLayout } from 'components'
+import { Loader, MyLayout, LandingLayout, SocketIO } from 'components'
 import { BackTop, Layout } from 'antd'
 import { classnames, config } from 'utils'
 import { Helmet } from 'react-helmet'
 import { withRouter } from 'dva/router'
 import { injectIntl, FormattedMessage } from 'react-intl'
-import { updateTime } from 'services/socket'
 import Error from './error'
 import '../themes/index.less'
 import './app.less'
@@ -21,24 +20,17 @@ import './app.less'
 const { Content, Footer, Sider } = Layout
 const { Header, Bread, styles } = MyLayout
 const { LandingHeader, LandingFooter } = LandingLayout
+const { Socket, Event } = SocketIO
 const { prefix, openPages, rtlCSS } = config
 
 let lastHref
 
 class App extends PureComponent {
 
-  componentDidMount() {
-    const { dispatch } = this.props;
-    this.unsubUpdateTime = updateTime(({ time }) => {
-      console.log('time: ', time)
-      dispatch({ type: 'app/updateTime', payload: { time } })
-    })
+  updateTimeHandler ({ time }) {
+    // console.log('time: ', time)
+    this.props.dispatch({ type: 'app/updateTime', payload: { time } })
   }
-
-  componentWillUnmount() {
-    this.unsubUpdateTime()
-  }
-
   render () {
     const {
       children, dispatch, app, loading, location, intl
@@ -142,40 +134,43 @@ class App extends PureComponent {
     }
 
     return (
-      <div>
-        <Loader fullScreen spinning={loading.effects['app/query']} />
-        <Helmet  htmlAttributes={{ lang : locale }}>
-          <title>ANTD ADMIN</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <link rel="icon" href={logo} type="image/x-icon" />
-          {iconFontJS && <script src={iconFontJS} />}
-          {iconFontCSS && <link rel="stylesheet" href={iconFontCSS} />}
-          {rtlCSS && intl.locale === 'ar' && <link rel="stylesheet" href={rtlCSS} />}
-        </Helmet>
-
-        <Layout className={classnames({ [styles.dark]: darkTheme, [styles.light]: !darkTheme })}>
-          {!isNavbar && <Sider
-            trigger={null}
-            collapsible
-            collapsed={siderFold}
-          >
-            {siderProps.menu.length === 0 ? null : <MyLayout.Sider {...siderProps} />}
-          </Sider>}
-          <Layout style={{ height: '100vh', overflow: 'scroll' }} id="mainContainer">
-            <BackTop target={() => document.getElementById('mainContainer')} />
-            <Header {...headerProps} />
-            <div>{app.time}</div>
-            <div>{app.serverStatus}</div>
-            <Content>
-              <Bread {...breadProps} />
-              {hasPermission ? children : <Error />}
-            </Content>
-            <Footer >
-              {config.footerText}
-            </Footer>
+      <Socket>
+        <Fragment>
+          <Loader fullScreen spinning={loading.effects['app/query']} />
+          <Helmet htmlAttributes={{ lang : locale }}>
+            <title>ANTD ADMIN</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <link rel="icon" href={logo} type="image/x-icon" />
+            {iconFontJS && <script src={iconFontJS} />}
+            {iconFontCSS && <link rel="stylesheet" href={iconFontCSS} />}
+            {rtlCSS && intl.locale === 'ar' && <link rel="stylesheet" href={rtlCSS} />}
+          </Helmet>
+          <Layout className={classnames({ [styles.dark]: darkTheme, [styles.light]: !darkTheme })}>
+            {!isNavbar && <Sider
+              trigger={null}
+              collapsible
+              collapsed={siderFold}
+            >
+              {siderProps.menu.length === 0 ? null : <MyLayout.Sider {...siderProps} />}
+            </Sider>}
+            <Layout style={{ height: '100vh', overflow: 'scroll' }} id="mainContainer">
+              <BackTop target={() => document.getElementById('mainContainer')} />
+              <Header {...headerProps} />
+              <Event event='updateTime' handler={this.updateTimeHandler.bind(this)} />
+              <div>{app.time}</div>
+              <div>{app.serverStatus}</div>
+              <Content>
+                <Bread {...breadProps} />
+                {hasPermission ? children : <Error />}
+              </Content>
+              <Footer >
+                {config.footerText}
+              </Footer>
+            </Layout>
           </Layout>
-        </Layout>
-      </div>
+        </Fragment>
+
+      </Socket>
     )
   }
 }
