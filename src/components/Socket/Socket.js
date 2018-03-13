@@ -19,14 +19,12 @@ class Socket extends React.Component {
 
   constructor (props, context) {
     super(props, context);
-
     this.socket = SocketIO(SOCKET_URL, this.mergeOptions(props.options));
-
-    this.socket.status = 'initialized';
+    this.socket.status = 'initialized'
     this.unsubscribelisteners = this.initListeners()
   }
 
-  onConnect() {
+  onConnect () {
     const handler = (e) => {
       console.log('connect '+ SOCKET_URL)
       this.socket.status = 'connected'
@@ -97,7 +95,6 @@ class Socket extends React.Component {
   }
 
   initListeners () {
-    console.log('initListeners: ')
     this.unsubConnect = this.onConnect();
     this.unsubDisconnect = this.onDisconnect();
     this.unsubReconnectAttempt = this.onReconnectAttempt();
@@ -113,6 +110,8 @@ class Socket extends React.Component {
       this.unsubReconnect()
       this.unsubReconnectFailed()
       this.unsubError()
+      this.socket.disconnect(true)
+      this.socket = null
     }
   }
   mergeOptions (options = {}) {

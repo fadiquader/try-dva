@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 class Event extends React.Component {
+
   constructor(props, context) {
     super(props, context);
   }
@@ -17,7 +18,7 @@ class Event extends React.Component {
     socket.on(event, handler);
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     const { event, handler } = this.props;
     const { socket } = this.context;
 
