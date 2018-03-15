@@ -56,7 +56,13 @@ module.exports = (webpackConfig, env) => {
     routes: `${__dirname}/src/routes`,
     themes: `${__dirname}/src/themes`,
   }
-
+  webpackConfig.node = {
+    dgram: 'empty',
+    fs: 'empty',
+    net: 'empty',
+    tls: 'empty',
+    child_process: 'empty',
+  }
   // console.log('webpackConfig: ', webpackConfig)
   return webpackConfig
 }
